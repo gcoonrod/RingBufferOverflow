@@ -2,17 +2,23 @@ package com.ca.ringbuffer;
 
 import com.lmax.disruptor.EventHandler;
 
+import java.util.ArrayList;
+import java.util.List;
+
 /**
  * Created by coonrod on 6/26/14.
  */
 public class EventReader implements EventHandler<Event> {
 
     private long divisor;
+    private boolean first = true;
+    private String oString = null;
+    private List<Long> counters = new ArrayList<Long>();
 
     private static final ThreadLocal<Long> counter = new ThreadLocal<Long>(){
         @Override
         protected Long initialValue(){
-            return 1l;
+            return 0l;
         }
     };
 
@@ -30,9 +36,13 @@ public class EventReader implements EventHandler<Event> {
      */
     @Override
     public void onEvent(Event event, long sequence, boolean endOfBatch) throws Exception {
-        overflowCheck(event.getCounter());
+        if(first){
+            Thread.sleep(5000);
+            first = false;
+        }
+        simpleOverflowCheck(event.getCounter(), counter.get(), sequence);
         counter.set(event.getCounter());
-        Thread.sleep(1000);
+        counters.add(event.getCounter());
     }
 
     private void overflowCheck(Long newCounter) {
@@ -62,6 +72,21 @@ public class EventReader implements EventHandler<Event> {
             System.out.println("First run.");
         } else {
             System.out.println("I have no idea how we got here!");
+        }
+
+    }
+
+    private void simpleOverflowCheck(Long newCounter, Long prevCounter, long sequence){
+
+        boolean overflow = (newCounter > (prevCounter + 1));
+
+        if(overflow){
+            oString = "Reading from RingBuffer slot: " + sequence + "\n";
+            oString += "Previous counter value: " + prevCounter + "\n";
+            oString += "New counter value: " + newCounter + "\n";
+            System.out.println("OVERFLOW:\n" + oString);
+        } else {
+            oString = null;
         }
 
     }

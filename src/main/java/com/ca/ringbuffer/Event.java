@@ -50,4 +50,11 @@ public class Event {
         }
     };
 
+//    public final static EventTranslator<Event> EVENT_TRANSLATOR = new EventTranslator<Event>() {
+//        @Override
+//        public void translateTo(Event event, long sequence) {
+//
+//        }
+//    };
+
 }
