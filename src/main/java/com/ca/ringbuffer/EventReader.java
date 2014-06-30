@@ -15,6 +15,14 @@ public class EventReader implements EventHandler<Event> {
     private String oString = null;
     private List<Long> counters = new ArrayList<Long>();
 
+    public void listErrors(){
+        System.out.println("Listing Counters where overflow detected:");
+        for(Long error : counters){
+            System.out.println(error + ",");
+        }
+        System.out.println("Error Print Complete.");
+    }
+
     private static final ThreadLocal<Long> counter = new ThreadLocal<Long>(){
         @Override
         protected Long initialValue(){
@@ -36,13 +44,17 @@ public class EventReader implements EventHandler<Event> {
      */
     @Override
     public void onEvent(Event event, long sequence, boolean endOfBatch) throws Exception {
+        System.out.println("Reading slot:\t" + sequence + "\tcounter:\t" + counter.get() + "\tpayload:\t" + event.getCounter());
         if(first){
             Thread.sleep(5000);
             first = false;
         }
-        simpleOverflowCheck(event.getCounter(), counter.get(), sequence);
+
+        if (simpleOverflowCheck(event.getCounter(), counter.get(), sequence)){
+            counters.add(event.getCounter());
+        }
         counter.set(event.getCounter());
-        counters.add(event.getCounter());
+
     }
 
     private void overflowCheck(Long newCounter) {
@@ -76,7 +88,7 @@ public class EventReader implements EventHandler<Event> {
 
     }
 
-    private void simpleOverflowCheck(Long newCounter, Long prevCounter, long sequence){
+    private boolean simpleOverflowCheck(Long newCounter, Long prevCounter, long sequence){
 
         boolean overflow = (newCounter > (prevCounter + 1));
 
@@ -88,6 +100,8 @@ public class EventReader implements EventHandler<Event> {
         } else {
             oString = null;
         }
+
+        return overflow;
 
     }
 }

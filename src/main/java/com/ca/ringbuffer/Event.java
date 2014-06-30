@@ -15,6 +15,16 @@ public class Event {
     private Long counter;
     private Timestamp timestamp;
 
+    public String getPayload() {
+        return payload;
+    }
+
+    public void setPayload(String payload) {
+        this.payload = payload;
+    }
+
+    private String payload;
+
     public Long getCounter() {
         return counter;
     }

@@ -1,6 +1,7 @@
 package com.ca.ringbuffer.test;
 
 import com.ca.ringbuffer.EventWriter;
+import com.ca.ringbuffer.EventWriterWithTranslator;
 import com.lmax.disruptor.*;
 import org.junit.After;
 import org.junit.Before;
@@ -153,6 +154,33 @@ public class Tester {
         EventWriter.stop();
         System.out.println("Errors: " + errors);
         System.out.println("PRINT OUT COUNTERLIST");
+        System.out.println("Completed TryPublishEvent Test.");
+        System.out.println("================== END ==================");
+    }
+
+    @Test
+    public void writerWithTranslatorTest() throws Exception {
+        System.out.println("================== START ==================");
+        System.out.println("Beginning TryPublishEvent Test:");
+        EventWriterWithTranslator.init(ringBufferSize, new YieldingWaitStrategy());
+
+        int runs = ringBufferSize * 2 * 2;
+        int errors = 0;
+
+        System.out.println("Runs: " + runs);
+        for(int i = 0; i < runs; i++){
+            System.out.println("Run: " + i);
+            boolean flag = EventWriterWithTranslator.tryPublish("one", 2, "Three");
+
+            if(flag){
+                //System.out.println("Writer has caught up to Reader! Potential data loss!");
+                errors += 1;
+            }
+
+        }
+        Thread.sleep(10000);
+        EventWriterWithTranslator.stop();
+        System.out.println("Errors: " + errors);
         System.out.println("Completed TryPublishEvent Test.");
         System.out.println("================== END ==================");
     }
